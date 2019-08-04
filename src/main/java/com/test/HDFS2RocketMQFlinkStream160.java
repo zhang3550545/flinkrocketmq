@@ -79,14 +79,14 @@ public class HDFS2RocketMQFlinkStream160 {
         int msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL05;
         producerProps.setProperty(RocketMQConfig.MSG_DELAY_LEVEL, String.valueOf(msgDelayLevel));
 
-        ds
-                .addSink(
-                        new RocketMQSink<>(
-                                new SimpleKeyValueSerializationSchema()
-                                , new DefaultTopicSelector("flink-hdfs-rmq-new2")
-                                , producerProps
-                        ).withBatchFlushOnCheckpoint(true)
-                ).name("rocketmq-sink");
+        RocketMQSink sink = new RocketMQSink(new SimpleKeyValueSerializationSchema()
+                , new DefaultTopicSelector("flink-hdfs-rmq-new2")
+                , producerProps)
+                .withBatchFlushOnCheckpoint(true)
+                .withAsync(true)
+                .withBatchSize(100);
+
+        ds.addSink(sink).name("rocketmq-sink");
 
         sEnv.execute("HDFS2RocketMQFlinkStream");
     }
